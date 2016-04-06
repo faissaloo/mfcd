@@ -71,6 +71,9 @@ _start:
   push ebp
   mov ebp, esp
   sysenter        ; Kernel interrupt
+  pop ebp
+  pop edx
+  pop ecx
   _firstFork:
   cmp eax, 0 ;If the return value is 0, we are in the child process therefore
               ;we may continue on to fork again
@@ -83,6 +86,9 @@ _start:
   push ebp
   mov ebp, esp
   sysenter        ; Kernel interrupt
+  pop ebp
+  pop edx
+  pop ecx
   _secondFork:
   cmp eax, 0 ;If the return value is 0, we are in the grandchild process therefore
               ;we may continue onto _main
@@ -97,6 +103,9 @@ _start:
   push ebp
   mov ebp, esp
   sysenter        ; Kernel interrupt
+  pop ebp
+  pop edx
+  pop ecx
   _fanModeOpened:
   inc edx
   mov ebx, eax       ;Put the file descripter/'pointer' in ebx
@@ -108,6 +117,9 @@ _start:
   push ebp
   mov ebp, esp
   sysenter        ; Kernel interrupt
+  pop ebp
+  pop edx
+  pop ecx
   _fanModeSet:
   mov eax, sys_close
   push _main
@@ -116,6 +128,9 @@ _start:
   push ebp
   mov ebp, esp
   sysenter        ; Kernel interrupt
+  pop ebp
+  pop edx
+  pop ecx
   _main:
       mov ebx, tempFile
       mov eax, sys_open
@@ -126,6 +141,9 @@ _start:
       push ebp
       mov ebp, esp
       sysenter        ; Kernel interrupt
+      pop ebp
+      pop edx
+      pop ecx
       _tempOpened:
       mov ebx, eax ;Put the file descripter/'pointer' in ebx
       mov eax, sys_read
@@ -137,6 +155,9 @@ _start:
       push ebp
       mov ebp, esp
       sysenter        ; Kernel interrupt
+      pop ebp
+      pop edx
+      pop ecx
       _tempRead:
       mov eax, sys_close
       push _strToInt
@@ -145,6 +166,9 @@ _start:
       push ebp
       mov ebp, esp
       sysenter        ; Kernel interrupt
+      pop ebp
+      pop edx
+      pop ecx
       ;Changes the string we get from .../temp to an int
       ;No need to check that it's a valid number because we already know it is
       _strToInt:
@@ -239,6 +263,9 @@ _start:
       push ebp
       mov ebp, esp
       sysenter        ; Kernel interrupt
+      pop ebp
+      pop edx
+      pop ecx
       _fanOpened:
         mov ebx, eax       ;Put the file descripter/'pointer' in ebx
         mov eax, sys_write
@@ -249,6 +276,9 @@ _start:
         push ebp
         mov ebp, esp
         sysenter        ; Kernel interrupt
+        pop ebp
+        pop edx
+        pop ecx
         ;Error codes that will be put in eax should an error occur for reference:
         ;http://www-numi.fnal.gov/offline_software/srt_public_context/WebDocs/Errors/unix_system_errors.html
         _fanSet:
@@ -259,6 +289,9 @@ _start:
           push ebp
           mov ebp, esp
           sysenter        ; Kernel interrupt
+          pop ebp
+          pop edx
+          pop ecx
           _fanClosed:
             ;Delay before looping again to prevent pegging
             mov dword [tv_sec], fanDelay
@@ -272,6 +305,9 @@ _start:
             push ebp
             mov ebp, esp
             sysenter        ; Kernel interrupt
+            pop ebp
+            pop edx
+            pop ecx
 _exit:
   ;Clean exit
   mov eax, sys_exit
