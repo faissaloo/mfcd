@@ -46,8 +46,6 @@ section .data
   sys_fork      equ 2
   sys_exit      equ 1
 
-  sys_call  equ 80h
-
 
   O_RDWR        equ 2
   O_WRONLY      equ 1
