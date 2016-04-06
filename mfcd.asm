@@ -67,13 +67,25 @@ section .text
 _start:
   ;Fork to orphan the process from a shell to daemonise it
   mov eax, sys_fork
-  int sys_call
+  push _firstFork
+  push ecx
+  push edx
+  push ebp
+  mov ebp, esp
+  sysenter        ; Kernel interrupt
+  _firstFork:
   cmp eax, 0 ;If the return value is 0, we are in the child process therefore
               ;we may continue on to fork again
   jnz _exit  ;otherwise jump to _exit
   ;d-d-d-double fork!
   mov eax, sys_fork
-  int sys_call
+  push _secondFork
+  push ecx
+  push edx
+  push ebp
+  mov ebp, esp
+  sysenter        ; Kernel interrupt
+  _secondFork:
   cmp eax, 0 ;If the return value is 0, we are in the grandchild process therefore
               ;we may continue onto _main
   jnz _exit  ;otherwise jump to _exit
@@ -81,32 +93,60 @@ _start:
   mov ebx, fanModeFile
   mov eax, sys_open
   mov ecx, O_WRONLY
-  int sys_call
-
+  push _fanModeOpened
+  push ecx
+  push edx
+  push ebp
+  mov ebp, esp
+  sysenter        ; Kernel interrupt
+  _fanModeOpened:
   inc edx
   mov ebx, eax       ;Put the file descripter/'pointer' in ebx
   mov eax, sys_write
   mov ecx, fanMode
-  int sys_call
-
+  push _fanModeSet
+  push ecx
+  push edx
+  push ebp
+  mov ebp, esp
+  sysenter        ; Kernel interrupt
+  _fanModeSet:
   mov eax, sys_close
-  int sys_call
-
+  push _main
+  push ecx
+  push edx
+  push ebp
+  mov ebp, esp
+  sysenter        ; Kernel interrupt
   _main:
       mov ebx, tempFile
       mov eax, sys_open
       xor ecx, ecx
-      int sys_call
-
+      push _tempOpened
+      push ecx
+      push edx
+      push ebp
+      mov ebp, esp
+      sysenter        ; Kernel interrupt
+      _tempOpened:
       mov ebx, eax ;Put the file descripter/'pointer' in ebx
       mov eax, sys_read
       mov ecx, tempFileBuff
       mov edx, tempFileLen
-      int sys_call
-
+      push _tempRead
+      push ecx
+      push edx
+      push ebp
+      mov ebp, esp
+      sysenter        ; Kernel interrupt
+      _tempRead:
       mov eax, sys_close
-      int sys_call
-
+      push _strToInt
+      push ecx
+      push edx
+      push ebp
+      mov ebp, esp
+      sysenter        ; Kernel interrupt
       ;Changes the string we get from .../temp to an int
       ;No need to check that it's a valid number because we already know it is
       _strToInt:
@@ -195,27 +235,45 @@ _start:
       mov ebx, fanFile
       mov eax, sys_open
       mov ecx, O_WRONLY
-      int sys_call
-
-      mov ebx, eax       ;Put the file descripter/'pointer' in ebx
-      mov eax, sys_write
-      mov ecx, fanSpeedToSet
-      int sys_call
-      ;Error codes that will be put in eax should an error occur for reference:
-      ;http://www-numi.fnal.gov/offline_software/srt_public_context/WebDocs/Errors/unix_system_errors.html
-
-      mov eax, sys_close
-      int sys_call
-
-      ;Delay before looping again to prevent pegging
-      mov dword [tv_sec], fanDelay
-      ;No need to set milliseconds, that just takes up storage space and CPU time
-      mov eax, sys_nanosleep
-      mov ebx, timeval  ;sys_nanosleep
-      xor ecx, ecx
-      int sys_call
-
-      jmp _main
+      push _fanOpened
+      push ecx
+      push edx
+      push ebp
+      mov ebp, esp
+      sysenter        ; Kernel interrupt
+      _fanOpened:
+        mov ebx, eax       ;Put the file descripter/'pointer' in ebx
+        mov eax, sys_write
+        mov ecx, fanSpeedToSet
+        push _fanSet
+        push ecx
+        push edx
+        push ebp
+        mov ebp, esp
+        sysenter        ; Kernel interrupt
+        ;Error codes that will be put in eax should an error occur for reference:
+        ;http://www-numi.fnal.gov/offline_software/srt_public_context/WebDocs/Errors/unix_system_errors.html
+        _fanSet:
+          mov eax, sys_close
+          push _fanClosed
+          push ecx
+          push edx
+          push ebp
+          mov ebp, esp
+          sysenter        ; Kernel interrupt
+          _fanClosed:
+            ;Delay before looping again to prevent pegging
+            mov dword [tv_sec], fanDelay
+            ;No need to set milliseconds, that just takes up storage space and CPU time
+            mov eax, sys_nanosleep
+            mov ebx, timeval  ;sys_nanosleep
+            xor ecx, ecx
+            push _main ;Jumps to _main after the delay
+            push ecx
+            push edx
+            push ebp
+            mov ebp, esp
+            sysenter        ; Kernel interrupt
 _exit:
   ;Clean exit
   mov eax, sys_exit
