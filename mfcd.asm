@@ -276,4 +276,9 @@ _exit:
   ;Clean exit
   mov eax, sys_exit
   xor ebx, ebx
-  int sys_call
+  push _exit ;It doesn't matter where we jump here, as long as it exists
+  push ecx
+  push edx
+  push ebp
+  mov ebp, esp
+  sysenter        ; Kernel interrupt
