@@ -14,11 +14,11 @@ global _start
 section .data
 
   ;USER CONSTANTS, CHANGE ACCORDING TO WHAT YOU NEED
-  minTemp     equ 20000 ;20000=20°c
-  maxTemp     equ 40000
+  minTemp     equ 40000 ;20000=20°c
+  maxTemp     equ 90000
   maxFanSpeed equ 6500  ;6500 = 6500rpm
   minFanSpeed equ 2000
-  fanDelay    equ 5     ;Delay between speed changes in seconds
+  fanDelay    equ 10     ;Delay between speed changes in seconds
   ;DON'T CHANGE ANYTHING BELOW THIS UNLESS YOU KNOW WHAT YOU'RE DOING
 
   fanSpeedDiff equ maxFanSpeed-minFanSpeed
@@ -30,7 +30,7 @@ section .data
   ;fanFile db "./fan1_output",0 ;Debug
   fanFile db "/sys/devices/platform/applesmc.768/fan1_output",0 ;This is where we write our calculated temperature
 
-  tempFile db "/sys/class/thermal/thermal_zone0/temp", 0 ;This is where we get the temperature from
+  tempFile db "/sys/class/thermal/thermal_zone1/temp", 0 ;This is where we get the temperature from
 
   tempFileLen equ 7 ;Max length of the string to read, made 6+1 (for the '\0')
                     ;because if your CPU temp is higher than 999.99°C the computer
