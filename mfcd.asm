@@ -15,7 +15,7 @@ section .data
 
   ;USER CONSTANTS, CHANGE ACCORDING TO WHAT YOU NEED
   minTemp     equ 40000 ;20000=20°c
-  maxTemp     equ 90000
+  maxTemp     equ 80000
   maxFanSpeed equ 6500  ;6500 = 6500rpm
   minFanSpeed equ 2000
   fanDelay    equ 10     ;Delay between speed changes in seconds
