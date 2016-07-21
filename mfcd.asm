@@ -90,7 +90,7 @@ _start:
   pop edx
   pop ecx
   _secondFork:
-  cmp eax, 0 ;If the return value is 0, we are in the grandchild process therefore
+  test eax, eax ;If the return value is 0, we are in the grandchild process therefore
               ;we may continue onto _main
   jnz _exit  ;otherwise jump to _exit
   ;Turn on manual control mode
@@ -220,7 +220,7 @@ _start:
         mov ebx, fanSpeedToSet  ;Put the pointer to fanSpeedToSet (str) in ebx
         mov ecx, 10 ;For idiv
       _intToStr_main:
-        cmp eax, 0 ;Result is saved in eax, which is why we're checking if it's 0
+        test eax, eax ;Result is saved in eax, which is why we're checking if it's 0
                     ;first
         jz _intToStr_end ;because if eax is 0 that means there's not more characters
                           ; to add.
