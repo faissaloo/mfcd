@@ -75,7 +75,7 @@ _start:
   pop edx
   pop ecx
   _firstFork:
-  cmp eax, 0 ;If the return value is 0, we are in the child process therefore
+  test eax, eax ;If the return value is 0, we are in the child process therefore
               ;we may continue on to fork again
   jnz _exit  ;otherwise jump to _exit
   ;d-d-d-double fork!
