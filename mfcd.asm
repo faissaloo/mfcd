@@ -66,14 +66,8 @@ _start:
   ;Fork to orphan the process from a shell to daemonise it
   mov eax, sys_fork
   push _firstFork
-  push ecx
-  push edx
-  push ebp
-  mov ebp, esp
+  lea ebp, [esp-12]
   sysenter        ; Kernel interrupt
-  pop ebp
-  pop edx
-  pop ecx
   _firstFork:
   test eax, eax ;If the return value is 0, we are in the child process therefore
               ;we may continue on to fork again
@@ -81,14 +75,8 @@ _start:
   ;d-d-d-double fork!
   mov eax, sys_fork
   push _secondFork
-  push ecx
-  push edx
-  push ebp
-  mov ebp, esp
+  lea ebp, [esp-12]
   sysenter        ; Kernel interrupt
-  pop ebp
-  pop edx
-  pop ecx
   _secondFork:
   test eax, eax ;If the return value is 0, we are in the grandchild process therefore
               ;we may continue onto _main
@@ -98,77 +86,41 @@ _start:
   mov eax, sys_open
   mov ecx, O_WRONLY
   push _fanModeOpened
-  push ecx
-  push edx
-  push ebp
-  mov ebp, esp
+  lea ebp, [esp-12]
   sysenter        ; Kernel interrupt
-  pop ebp
-  pop edx
-  pop ecx
   _fanModeOpened:
   inc edx
   mov ebx, eax       ;Put the file descripter/'pointer' in ebx
   mov eax, sys_write
   mov ecx, fanMode
   push _fanModeSet
-  push ecx
-  push edx
-  push ebp
-  mov ebp, esp
+  lea ebp, [esp-12]
   sysenter        ; Kernel interrupt
-  pop ebp
-  pop edx
-  pop ecx
   _fanModeSet:
   mov eax, sys_close
   push _main
-  push ecx
-  push edx
-  push ebp
-  mov ebp, esp
+  lea ebp, [esp-12]
   sysenter        ; Kernel interrupt
-  pop ebp
-  pop edx
-  pop ecx
   _main:
       mov ebx, tempFile
       mov eax, sys_open
       xor ecx, ecx
       push _tempOpened
-      push ecx
-      push edx
-      push ebp
-      mov ebp, esp
+      lea ebp, [esp-12]
       sysenter        ; Kernel interrupt
-      pop ebp
-      pop edx
-      pop ecx
       _tempOpened:
       mov ebx, eax ;Put the file descripter/'pointer' in ebx
       mov eax, sys_read
       mov ecx, tempFileBuff
       mov edx, tempFileLen
       push _tempRead
-      push ecx
-      push edx
-      push ebp
-      mov ebp, esp
+      lea ebp, [esp-12]
       sysenter        ; Kernel interrupt
-      pop ebp
-      pop edx
-      pop ecx
       _tempRead:
       mov eax, sys_close
       push _strToInt
-      push ecx
-      push edx
-      push ebp
-      mov ebp, esp
+      lea ebp, [esp-12]
       sysenter        ; Kernel interrupt
-      pop ebp
-      pop edx
-      pop ecx
       ;Changes the string we get from .../temp to an int
       ;No need to check that it's a valid number because we already know it is
       _strToInt:
@@ -189,26 +141,21 @@ _start:
           inc ebx          ;incriment ebx to prepare the next loop
           jmp _strToInt_main
       _strToInt_end:
-
       ;Cap the temps to the limits we've set
-      cmp eax, maxTemp
-      jg _tempTooHigh
-      cmp eax, minTemp
-      jl _tempTooLow
-      jmp _tempOk
-      _tempTooHigh:
-        mov eax, maxTemp
-        jmp _tempOk
-      _tempTooLow:
-        mov eax, minTemp
-      _tempOk:
+      mov ebx, maxTemp
+      cmp eax, ebx
+      cmovg eax, ebx
+      mov ebx, minTemp
+      cmp eax, ebx
+      cmovl eax, ebx
+      
       ;currTemp is in eax from our strToInt
       ;Here we do our fancy math
       ;Thanks to @sheepytweety for helping me improve this
       ;fanSpeed=(((currTemp - minTemp)*(maxFanSpeed-minFanSpeed))//(maxTemp-minTemp))+minFanSpeed
       sub eax, minTemp           ;  (currTemp - minTemp)
       imul eax, fanSpeedDiff     ;  (currTemp - minTemp)*(maxFanSpeed-minFanSpeed)
-      mov ebx, tempDiff;                                                    (maxTemp-minTemp)
+      mov ebx, tempDiff          ;                                                 (maxTemp-minTemp)
 
       xor edx, edx      ;We have to clear EDX because idiv uses EDX:EAX
       idiv ebx          ;(((currTemp - minTemp)*(maxFanSpeed-minFanSpeed))//(maxTemp-minTemp))
@@ -271,27 +218,15 @@ _start:
         mov eax, sys_write
         mov ecx, fanSpeedToSet
         push _fanSet
-        push ecx
-        push edx
-        push ebp
-        mov ebp, esp
+        lea ebp, [esp-12]
         sysenter        ; Kernel interrupt
-        pop ebp
-        pop edx
-        pop ecx
         ;Error codes that will be put in eax should an error occur for reference:
         ;http://www-numi.fnal.gov/offline_software/srt_public_context/WebDocs/Errors/unix_system_errors.html
         _fanSet:
           mov eax, sys_close
           push _fanClosed
-          push ecx
-          push edx
-          push ebp
-          mov ebp, esp
+          lea ebp, [esp-12]
           sysenter        ; Kernel interrupt
-          pop ebp
-          pop edx
-          pop ecx
           _fanClosed:
             ;Delay before looping again to prevent pegging
             mov dword [tv_sec], fanDelay
@@ -300,14 +235,8 @@ _start:
             mov ebx, timeval  ;sys_nanosleep
             xor ecx, ecx
             push _main ;Jumps to _main after the delay
-            push ecx
-            push edx
-            push ebp
-            mov ebp, esp
+            lea ebp, [esp-12]
             sysenter        ; Kernel interrupt
-            pop ebp
-            pop edx
-            pop ecx
 _exit:
   ;Clean exit
   mov eax, sys_exit
