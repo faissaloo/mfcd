@@ -52,8 +52,8 @@ section .data
   O_RDONLY      equ 0
 
   timeval:
-    tv_sec  db 0    ;Time in seconds to delay the program after every check
-    tv_usec db 0    ;Time in milliseconds
+    tv_sec  dd 0    ;Time in seconds to delay the program after every check
+    tv_usec dd 0    ;Time in milliseconds
 
 section .bss
 
