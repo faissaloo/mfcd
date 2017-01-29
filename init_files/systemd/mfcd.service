@@ -4,8 +4,8 @@ Description=Mac fan controller
 [Service]
 Type=forking 
 ExecStart=/bin/mfcd
-ExecReload=killall mfcd;/bin/mfcd
-ExecStop=killall mfcd
+ExecReload=/usr/bin/killall mfcd;/bin/mfcd
+ExecStop=/usr/bin/killall mfcd
 Restart=always
 [Install]
 WantedBy=multi-user.target
