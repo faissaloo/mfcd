@@ -30,7 +30,7 @@ section .data
   ;fanFile db "./fan1_output",0 ;Debug
   fanFile db "/sys/devices/platform/applesmc.768/fan1_output",0 ;This is where we write our calculated temperature
 
-  tempFile db "/sys/class/thermal/thermal_zone1/temp", 0 ;This is where we get the temperature from
+  tempFile db "/sys/devices/platform/applesmc.768/temp5_input", 0 ;This is where we get the temperature from
 
   tempFileLen equ 7 ;Max length of the string to read, made 6+1 (for the '\0')
                     ;because if your CPU temp is higher than 999.99°C the computer
