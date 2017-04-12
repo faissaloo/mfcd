@@ -126,21 +126,17 @@ _start:
       _strToInt:
           xor eax, eax      ;set eax to zero to prepare it
           xor ecx, ecx
-          mov ebx, tempFileBuff ;Copy the pointer to tempFileBuff to ebx
+          mov esi, tempFileBuff ;Copy the pointer to tempFileBuff to ebx
       _strToInt_main:
-          mov cl,[ebx]
-          cmp cl, 10
+          lodsb
+          cmp al, 10
+          lea ecx, [ecx+ecx*4]
+          lea ecx, [eax-48+ecx*2]
           jz _strToInt_end ;Newline signifies end of the string
-          imul eax, 10     ;Int multiply eax by 10 to leave space for the next number e.g:
-                            ; 20 <- 2
-          sub cl, 48      ;Subtract ecx by 48 because 0-9 are 48-57 in ASCII
-          add eax, ecx     ;Add ecx to eax.
-                            ;  9
-                            ;  V
-                            ; 29 <- 20 <- 2
-          inc ebx          ;incriment ebx to prepare the next loop
+          ;(eax*10)+(ecx-48)
           jmp _strToInt_main
       _strToInt_end:
+      mov eax,ecx
       ;Cap the temps to the limits we've set
       mov ebx, maxTemp
       cmp eax, ebx
@@ -160,7 +156,7 @@ _start:
       xor edx, edx      ;We have to clear EDX because idiv uses EDX:EAX
       idiv ebx          ;(((currTemp - minTemp)*(maxFanSpeed-minFanSpeed))//(maxTemp-minTemp))
       ;Result is in eax, add the minFanSpeed
-      add eax, minFanSpeed;(((currTemp - minTemp)*(maxFanSpeed-minFanSpeed))//(maxTemp-minTemp))+minFanSpeed
+      add ecx, minFanSpeed;(((currTemp - minTemp)*(maxFanSpeed-minFanSpeed))//(maxTemp-minTemp))+minFanSpeed
 
       ;Turn the int we've calculated back into a str
       _intToStr:
@@ -174,6 +170,7 @@ _start:
         xor edx, edx ;Clear edx since edx:eax is taken as the numerator for idiv
         idiv ecx ;Using this as a modulo, remainder is in edx, that's what we'll
                  ;use to calculate the character and append it
+        
         add edx, 48 ;int+48='int'
         mov byte [ebx], dl
         inc ebx
