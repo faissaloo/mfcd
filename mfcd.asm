@@ -35,7 +35,6 @@ section .data
   tempFileLen equ 7 ;Max length of the string to read, made 6+1 (for the '\0')
                     ;because if your CPU temp is higher than 999.99°C the computer
                     ;would have already died
-  fanSpeedToSet db 0;The string that holds the fan speed to be written
 
   ;Our lovely system calls
   sys_nanosleep equ 162
@@ -57,7 +56,7 @@ section .data
 
 section .bss
 
-tempFileBuff: resb 7 ;Max length of the string to store
+tempFileBuff: resb 7 ;Max length of the string to store, this is used both for the string we'll write and the string we'll read because we won't need to use both at once
 
 
 section .text
@@ -160,7 +159,7 @@ _start:
 
       ;Turn the int we've calculated back into a str
       _intToStr:
-        mov ebx, fanSpeedToSet  ;Put the pointer to fanSpeedToSet (str) in ebx
+        mov ebx, tempFileBuff+tempFileLen  ;This is the string we'll write to
         mov ecx, 10 ;For idiv
       _intToStr_main:
         test eax, eax ;Result is saved in eax, which is why we're checking if it's 0
@@ -173,30 +172,15 @@ _start:
         
         add edx, 48 ;int+48='int'
         mov byte [ebx], dl
-        inc ebx
+        dec ebx
         jmp _intToStr_main
-      _intToStr_end:
-        ;String is backwards, so we have to reverse it
-        _revStr:
-          mov esi, fanSpeedToSet ;Start of string
-          mov edi, ebx           ;End of string
-          sub ebx, fanSpeedToSet ;Length of string
-          ;Now the string has to be reversed
-          dec edi
-        _revStr_main:
-          mov al,[esi]
-          mov ah,[edi]
-          ;Do swapsies
-          mov [esi],ah
-          mov [edi],al
-          inc esi
-          dec edi
-          cmp esi,edi
-          jnge _revStr_main ;If the pointers have gone past each other stop, it means we're done
-        _revStr_end:
-      mov edx, ebx     ;Length was in ebx, move it to edx before we have to
+        _intToStr_end:
+        mov edx, tempFileBuff+tempFileLen-1
+        sub edx, ebx     ;Figure out the length of the new string        
                         ;modify ebx to put the fanFile pointer in it, sys_write
                         ;also uses edx to store the length anyways
+         lea esi, [ebx+1] ;Grab the start of the string and stick it in ecx for use later
+
       ;Time to write the result :D
       mov ebx, fanFile
       mov eax, sys_open
@@ -213,7 +197,7 @@ _start:
       _fanOpened:
         mov ebx, eax       ;Put the file descripter/'pointer' in ebx
         mov eax, sys_write
-        mov ecx, fanSpeedToSet
+	mov ecx, esi
         push _fanSet
         lea ebp, [esp-12]
         sysenter        ; Kernel interrupt
