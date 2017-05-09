@@ -191,9 +191,6 @@ _start:
       push ebp
       mov ebp, esp
       sysenter        ; Kernel interrupt
-      pop ebp
-      pop edx
-      pop ecx
       _fanOpened:
         mov ebx, eax       ;Put the file descripter/'pointer' in ebx
         mov eax, sys_write
