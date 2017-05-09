@@ -88,7 +88,7 @@ _start:
   lea ebp, [esp-12]
   sysenter        ; Kernel interrupt
   _fanModeOpened:
-  inc edx
+  inc edx            ;set edx to one
   mov ebx, eax       ;Put the file descripter/'pointer' in ebx
   mov eax, sys_write
   mov ecx, fanMode
